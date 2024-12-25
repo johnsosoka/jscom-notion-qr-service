@@ -1,0 +1,4 @@
+qrcode==8.0
+pillow==11.0.0
+boto3==1.35.87
+requests~=2.32.3
