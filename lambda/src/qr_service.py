@@ -2,7 +2,7 @@ import json
 import os
 import logging
 import boto3
-import qrcode
+import segno
 import requests
 from botocore.exceptions import ClientError
 
@@ -64,26 +64,16 @@ def generate_qr_code_and_upload(webhook_payload):
     page_url = webhook_payload["data"]["url"]
     page_id = webhook_payload["data"]["id"]
 
-    # Generate the QR code image
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(page_url)
-    qr.make(fit=True)
-    qr_image = qr.make_image(fill_color="black", back_color="white")
-
-    # Save the QR code to a temporary file
+    # Generate the QR code image using segno
+    qr = segno.make(page_url)
     temp_file_path = f"/tmp/{page_id}.png"
-    qr_image.save(temp_file_path)
+    qr.save(temp_file_path, scale=10)
 
     # Upload the QR code to S3
     try:
         s3_path = f"notion/qr/{page_id}.png"
         s3.upload_file(temp_file_path, BUCKET_NAME, s3_path)
-        file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{s3_path}"
+        file_url = f"https://{BUCKET_NAME}/{s3_path}"
         logger.info("Uploaded QR code to S3: %s", file_url)
         return file_url
     except ClientError as e:
