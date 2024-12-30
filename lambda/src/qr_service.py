@@ -21,7 +21,6 @@ def lambda_handler(event, context):
     """
     Lambda entry point.
     """
-    logger.info("Received event: %s", json.dumps(event))
 
     try:
         # Get column name and Notion token from headers
@@ -29,6 +28,7 @@ def lambda_handler(event, context):
         notion_token = event['headers'].get('x-notion-token')
 
         if not notion_token:
+            logger.error("Missing 'x-notion-token' header")
             raise ValueError("Missing 'x-notion-token' header")
 
         logger.info("Column to update: %s", column_name)
